@@ -271,7 +271,12 @@ const ExplorationPhase: React.FC = () => {
       {!isGameOver && (
         <>
           <div className="exploration-scene">
-            <GameCanvas>
+            <GameCanvas
+              playerPosition={getTilePosition(
+                state.explorationMap.playerPosition.x,
+                state.explorationMap.playerPosition.y
+              )}
+            >
               <Suspense fallback={null}>
                 {state.explorationMap.tiles.map((row, y) =>
                   row.map((tile, x) => (
@@ -571,7 +576,7 @@ const ExplorationPhase: React.FC = () => {
 
         .exploration-scene {
           width: 100%;
-          height: 60vh;
+          height: 80vh;
           position: relative;
           background: #1a1a1a;
           margin-bottom: 20px;

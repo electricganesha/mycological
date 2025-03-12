@@ -5,14 +5,25 @@ import {
   SSAO,
   BrightnessContrast,
 } from "@react-three/postprocessing";
-import { ReactNode } from "react";
-import { Color } from "three";
+import { ReactNode, useEffect } from "react";
+import { Color, Vector3 } from "three";
+import { useSpring, animated } from "@react-spring/three";
 
 interface GameCanvasProps {
   children: ReactNode;
+  playerPosition?: [number, number, number];
 }
 
-const GameCanvas = ({ children }: GameCanvasProps) => {
+const AnimatedOrbitControls = animated(OrbitControls);
+
+const GameCanvas = ({
+  children,
+  playerPosition = [0, -2, 0],
+}: GameCanvasProps) => {
+  const { target } = useSpring({
+    target: playerPosition,
+    config: { mass: 2, tension: 120, friction: 30 },
+  });
   return (
     <Canvas
       shadows
@@ -49,14 +60,15 @@ const GameCanvas = ({ children }: GameCanvasProps) => {
       </EffectComposer>
 
       {/* Controls */}
-      <OrbitControls
+      <AnimatedOrbitControls
         maxPolarAngle={Math.PI / 2.5}
         minPolarAngle={Math.PI / 4}
         minDistance={12}
         maxDistance={20}
         enablePan={false}
-        target={[0, -2, 0]}
+        target={target}
         enableDamping
+        zoomSpeed={2}
         dampingFactor={0.1}
       />
 
