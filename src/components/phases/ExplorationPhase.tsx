@@ -1,12 +1,6 @@
 import React, { useState, useEffect, Suspense } from "react";
 import { useGame } from "../../context/GameContext";
-import {
-  MapTile,
-  BiomeType,
-  MushroomType,
-  MushroomRarity,
-  Mushroom,
-} from "../../types";
+import { MapTile, BiomeType, MushroomRarity, Mushroom } from "../../types";
 import { getAdjacentTiles } from "../../utils/mapGenerator";
 import {
   getTerrainProperties,
@@ -14,6 +8,8 @@ import {
 } from "../../utils/terrainUtils";
 import GameCanvas from "../3d/GameCanvas";
 import HexTile from "../3d/HexTile";
+import { Html } from "@react-three/drei";
+import { PlayerStats } from "../ui/PlayerStats";
 
 const ExplorationPhase: React.FC = () => {
   const { state, dispatch } = useGame();
@@ -301,6 +297,21 @@ const ExplorationPhase: React.FC = () => {
                 )}
               </Suspense>
             </GameCanvas>
+            <div
+              style={{
+                width: "200px",
+                height: "200px",
+                backgroundColor: "rgba(255, 255, 255, 0.2)",
+                position: "absolute",
+                top: "16px",
+                right: "16px",
+                borderRadius: "8px",
+                border: "1px solid rgba(255, 255, 255, 0.3)",
+                padding: "16px",
+              }}
+            >
+              <PlayerStats />
+            </div>
           </div>
 
           {(warningMessage || state.player.stamina < 10) && (
@@ -544,7 +555,7 @@ const ExplorationPhase: React.FC = () => {
 
         .exploration-scene {
           width: 100%;
-          height: 600px;
+          height: 60vh;
           position: relative;
           background: #1a1a1a;
           margin-bottom: 20px;

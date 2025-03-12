@@ -29,7 +29,6 @@ const GameContainer = () => {
     <div className="game-container">
       <GameHeader />
       <main className="game-content">{renderPhase()}</main>
-      <GameFooter />
     </div>
   );
 };

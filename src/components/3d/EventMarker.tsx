@@ -76,7 +76,7 @@ const EventMarker = ({ type, position }: EventMarkerProps) => {
       {/* Tent body */}
       <mesh rotation={[0, 0, Math.PI / 4]} position={[0, 0.2, 0]}>
         <cylinderGeometry args={[0, 0.2, 0.4, 4, 1]} />
-        <meshStandardMaterial color="#4CAF50" metalness={0.3} roughness={0.7} />
+        <meshStandardMaterial color="#0047AB" metalness={0.3} roughness={0.7} />
       </mesh>
       {/* Tent entrance */}
       <mesh position={[0, 0.15, 0.18]}>
