@@ -184,37 +184,6 @@ const ExplorationPhase: React.FC = () => {
             </GameCanvas>
           </div>
 
-          <div className="player-status overlay">
-            <div className="status-bar">
-              <span>Health:</span>
-              <div className="bar-container">
-                <div
-                  className="bar health"
-                  style={{
-                    width: `${(state.player.health / state.player.maxHealth) * 100}%`,
-                  }}
-                />
-              </div>
-              <span>
-                {state.player.health}/{state.player.maxHealth}
-              </span>
-            </div>
-            <div className="status-bar">
-              <span>Stamina:</span>
-              <div className="bar-container">
-                <div
-                  className="bar stamina"
-                  style={{
-                    width: `${(state.player.stamina / state.player.maxStamina) * 100}%`,
-                  }}
-                />
-              </div>
-              <span>
-                {state.player.stamina}/{state.player.maxStamina}
-              </span>
-            </div>
-          </div>
-
           {state.player.stamina < 10 && (
             <div className="warning-message overlay">
               Not enough stamina to move! Rest to recover.
@@ -385,34 +354,6 @@ const ExplorationPhase: React.FC = () => {
           transform: translate(-50%, -50%);
           max-width: 400px;
           text-align: center;
-        }
-
-        .status-bar {
-          display: flex;
-          align-items: center;
-          gap: 10px;
-          margin: 5px 0;
-        }
-
-        .bar-container {
-          flex: 1;
-          height: 20px;
-          background: rgba(0, 0, 0, 0.3);
-          border-radius: 4px;
-          overflow: hidden;
-        }
-
-        .bar {
-          height: 100%;
-          transition: width 0.3s ease;
-        }
-
-        .bar.health {
-          background: #ff4444;
-        }
-
-        .bar.stamina {
-          background: #44ff44;
         }
 
         .warning-message {

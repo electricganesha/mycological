@@ -41,7 +41,10 @@ export interface Mushroom {
   color: string;
 }
 
+export type GamePhase = "exploration" | "identification" | "shop" | "crafting";
+
 export interface Player {
+  name: string;
   health: number;
   maxHealth: number;
   stamina: number;
@@ -50,6 +53,7 @@ export interface Player {
 
 export interface GameState {
   currentDay: number;
+  gamePhase: GamePhase;
   player: Player;
   explorationMap: GameMap;
   inventory: {

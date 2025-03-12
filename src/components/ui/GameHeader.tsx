@@ -1,4 +1,5 @@
 import React from "react";
+import "./GameHeader.css";
 import { useGame } from "../../context/GameContext";
 
 const GameHeader: React.FC = () => {
@@ -16,10 +17,39 @@ const GameHeader: React.FC = () => {
       <div className="player-info">
         <h1>{state.player.name}</h1>
         <div className="player-stats">
-          <span>Day {state.currentDay}</span>
-          <span>
-            Stamina: {state.player.stamina}/{state.player.maxStamina}
-          </span>
+          <div className="stats-row">
+            <span>Day {state.currentDay}</span>
+          </div>
+          <div className="stats-bars">
+            <div className="status-bar">
+              <span>Health</span>
+              <div className="bar-container">
+                <div
+                  className="bar health"
+                  style={{
+                    width: `${(state.player.health / state.player.maxHealth) * 100}%`,
+                  }}
+                />
+              </div>
+              <span className="value">
+                {state.player.health}/{state.player.maxHealth}
+              </span>
+            </div>
+            <div className="status-bar">
+              <span>Stamina</span>
+              <div className="bar-container">
+                <div
+                  className="bar stamina"
+                  style={{
+                    width: `${(state.player.stamina / state.player.maxStamina) * 100}%`,
+                  }}
+                />
+              </div>
+              <span className="value">
+                {state.player.stamina}/{state.player.maxStamina}
+              </span>
+            </div>
+          </div>
         </div>
       </div>
       <nav className="phase-navigation">
