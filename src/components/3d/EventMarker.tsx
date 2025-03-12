@@ -1,6 +1,6 @@
 import { useRef } from "react";
 import { useFrame } from "@react-three/fiber";
-import { Mesh } from "three";
+import { Mesh, Group } from "three";
 
 interface EventMarkerProps {
   type: "mushroom" | "danger" | "rest";
@@ -21,43 +21,93 @@ const EventMarker = ({ type, position }: EventMarkerProps) => {
     meshRef.current.rotation.y += 0.02;
   });
 
-  // Event-specific properties
-  const getEventProperties = () => {
+  const renderMushroom = () => (
+    <group>
+      {/* Mushroom stem */}
+      <mesh position={[0, 0.15, 0]}>
+        <cylinderGeometry args={[0.05, 0.08, 0.3, 8]} />
+        <meshStandardMaterial color="#DDDDDD" metalness={0.3} roughness={0.7} />
+      </mesh>
+      {/* Mushroom cap */}
+      <mesh position={[0, 0.35, 0]}>
+        <sphereGeometry args={[0.15, 16, 16, 0, Math.PI * 2, 0, Math.PI / 2]} />
+        <meshStandardMaterial color="#FF6B6B" metalness={0.3} roughness={0.6} />
+      </mesh>
+      {/* Spots on cap */}
+      <group position={[0, 0.35, 0]}>
+        {[...Array(5)].map((_, i) => (
+          <mesh
+            key={i}
+            position={[
+              Math.cos(i * Math.PI * 0.4) * 0.08,
+              0.05,
+              Math.sin(i * Math.PI * 0.4) * 0.08,
+            ]}
+          >
+            <sphereGeometry args={[0.02, 8, 8]} />
+            <meshStandardMaterial color="#FFFFFF" />
+          </mesh>
+        ))}
+      </group>
+    </group>
+  );
+
+  const renderDanger = () => (
+    <group>
+      {/* Skull base */}
+      <mesh>
+        <sphereGeometry args={[0.15, 16, 16]} />
+        <meshStandardMaterial color="#FF4444" metalness={0.5} roughness={0.6} />
+      </mesh>
+      {/* Eyes */}
+      <mesh position={[-0.05, 0.05, 0.1]}>
+        <boxGeometry args={[0.05, 0.08, 0.05]} />
+        <meshStandardMaterial color="#000000" />
+      </mesh>
+      <mesh position={[0.05, 0.05, 0.1]}>
+        <boxGeometry args={[0.05, 0.08, 0.05]} />
+        <meshStandardMaterial color="#000000" />
+      </mesh>
+    </group>
+  );
+
+  const renderRest = () => (
+    <group>
+      {/* Tent body */}
+      <mesh rotation={[0, 0, Math.PI / 4]} position={[0, 0.2, 0]}>
+        <cylinderGeometry args={[0, 0.2, 0.4, 4, 1]} />
+        <meshStandardMaterial color="#4CAF50" metalness={0.3} roughness={0.7} />
+      </mesh>
+      {/* Tent entrance */}
+      <mesh position={[0, 0.15, 0.18]}>
+        <cylinderGeometry args={[0.08, 0.08, 0.05, 16, 1, true]} />
+        <meshStandardMaterial
+          color="#2E7D32"
+          metalness={0.3}
+          roughness={0.7}
+          side={2}
+        />
+      </mesh>
+    </group>
+  );
+
+  const getMarkerContent = () => {
     switch (type) {
       case "mushroom":
-        return {
-          color: "#FFD700",
-          emissive: "#FFD700",
-          geometry: <octahedronGeometry args={[0.2]} />,
-        };
+        return renderMushroom();
       case "danger":
-        return {
-          color: "#FF4444",
-          emissive: "#FF4444",
-          geometry: <tetrahedronGeometry args={[0.2]} />,
-        };
+        return renderDanger();
       case "rest":
-        return {
-          color: "#4CAF50",
-          emissive: "#4CAF50",
-          geometry: <boxGeometry args={[0.2, 0.2, 0.2]} />,
-        };
+        return renderRest();
+      default:
+        return null;
     }
   };
 
-  const { color, emissive, geometry } = getEventProperties();
-
   return (
-    <mesh ref={meshRef} position={position}>
-      {geometry}
-      <meshStandardMaterial
-        color={color}
-        emissive={emissive}
-        emissiveIntensity={0.8}
-        metalness={0.5}
-        roughness={0.2}
-      />
-    </mesh>
+    <group ref={meshRef} position={position}>
+      {getMarkerContent()}
+    </group>
   );
 };
 

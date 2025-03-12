@@ -1,56 +1,69 @@
-import { useRef } from "react";
 import { useFrame } from "@react-three/fiber";
-import { Mesh, MeshStandardMaterial } from "three";
-import { Trail } from "@react-three/drei";
+import { useRef } from "react";
+import { Mesh } from "three";
 
 const PlayerMarker = () => {
-  const playerRef = useRef<Mesh>(null);
-  const trailRef = useRef<Mesh>(null);
+  const markerRef = useRef<Mesh>(null);
 
   useFrame((state) => {
-    if (!playerRef.current) return;
-
-    // Bob up and down slightly
-    const t = state.clock.getElapsedTime();
-    playerRef.current.position.y = 0.3 + Math.sin(t * 3) * 0.05;
-
-    // Rotate subtly
-    playerRef.current.rotation.y += 0.01;
+    if (markerRef.current) {
+      const t = state.clock.getElapsedTime();
+      // Animate the position indicator ring
+      markerRef.current.rotation.y += 0.02;
+      // Slight bobbing motion for the entire group
+      markerRef.current.parent!.position.y = 0.6 + Math.sin(t * 2) * 0.05;
+      // Subtle swaying motion
+      markerRef.current.parent!.rotation.z = Math.sin(t * 1.5) * 0.05;
+    }
   });
 
   return (
-    <group>
-      <Trail
-        width={0.4}
-        length={8}
-        color={"#ff2200"}
-        attenuation={(t) => t * t}
-      >
-        <mesh ref={playerRef} position={[0, 0.3, 0]}>
-          <sphereGeometry args={[0.3, 32, 32]} />
-          <meshStandardMaterial
-            color="#ff0000"
-            emissive="#ff0000"
-            emissiveIntensity={0.5}
-            metalness={0.8}
-            roughness={0.2}
-          />
-        </mesh>
-      </Trail>
-
-      {/* Shadow */}
-      <mesh position={[0, 0.05, 0]} rotation={[-Math.PI / 2, 0, 0]}>
-        <circleGeometry args={[0.4]} />
-        <meshBasicMaterial color="#000000" opacity={0.3} transparent />
+    <group position={[0, 0.6, 0]}>
+      {/* Body */}
+      <mesh position={[0, 0.3, 0]}>
+        <capsuleGeometry args={[0.2, 0.4, 8, 16]} />
+        <meshStandardMaterial color="#4527A0" metalness={0.2} roughness={0.8} />
       </mesh>
-
-      {/* Glow effect */}
-      <pointLight
-        color="#ff3333"
-        intensity={0.5}
-        distance={2}
-        position={[0, 0.3, 0]}
-      />
+      {/* Head */}
+      <mesh position={[0, 0.7, 0]}>
+        <sphereGeometry args={[0.15, 16, 16]} />
+        <meshStandardMaterial color="#5E35B1" metalness={0.2} roughness={0.8} />
+      </mesh>
+      {/* Hat */}
+      <mesh position={[0, 0.85, 0]} rotation={[0.2, 0, 0]}>
+        <cylinderGeometry args={[0.15, 0.2, 0.1, 16]} />
+        <meshStandardMaterial color="#795548" metalness={0.1} roughness={0.9} />
+      </mesh>
+      {/* Hat brim */}
+      <mesh position={[0, 0.81, 0.02]}>
+        <cylinderGeometry args={[0.22, 0.22, 0.02, 16]} />
+        <meshStandardMaterial color="#795548" metalness={0.1} roughness={0.9} />
+      </mesh>
+      {/* Backpack */}
+      <mesh position={[0, 0.3, 0.2]}>
+        <boxGeometry args={[0.25, 0.3, 0.15]} />
+        <meshStandardMaterial color="#3949AB" metalness={0.2} roughness={0.8} />
+      </mesh>
+      {/* Backpack pocket */}
+      <mesh position={[0, 0.2, 0.28]}>
+        <boxGeometry args={[0.15, 0.1, 0.05]} />
+        <meshStandardMaterial color="#283593" metalness={0.2} roughness={0.8} />
+      </mesh>
+      {/* Position indicator ring */}
+      <mesh
+        ref={markerRef}
+        rotation={[Math.PI / 2, 0, 0]}
+        position={[0, 0.05, 0]}
+      >
+        <torusGeometry args={[0.4, 0.03, 16, 32]} />
+        <meshStandardMaterial
+          color="#7C4DFF"
+          emissive="#7C4DFF"
+          emissiveIntensity={0.5}
+          metalness={0.8}
+          roughness={0.2}
+        />
+      </mesh>
     </group>
   );
 };
