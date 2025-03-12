@@ -10,7 +10,7 @@ const IdentificationPhase: React.FC = () => {
 
   // Get unidentified mushrooms from inventory
   const unidentifiedItems = state.inventory.filter((item) => {
-    const mushroom = mushrooms.find((m) => m.id === item.mushroomId);
+    const mushroom = mushrooms.find((m) => m.id === item.mushroom.id);
     return (
       mushroom && !state.knownMushrooms.some((km) => km.id === mushroom.id)
     );
@@ -27,7 +27,7 @@ const IdentificationPhase: React.FC = () => {
   const handleIdentification = () => {
     if (!selectedItem) return;
 
-    const mushroom = getMushroom(selectedItem.mushroomId);
+    const mushroom = getMushroom(selectedItem.mushroom.id);
     if (!mushroom) return;
 
     setIdentifying(true);
@@ -58,7 +58,7 @@ const IdentificationPhase: React.FC = () => {
         ) : (
           <div className="items-grid">
             {unidentifiedItems.map((item) => {
-              const mushroom = getMushroom(item.mushroomId);
+              const mushroom = getMushroom(item.mushroom.id);
               if (!mushroom) return null;
 
               return (
@@ -78,7 +78,7 @@ const IdentificationPhase: React.FC = () => {
                       <li>
                         Found in{" "}
                         {state.discoveredAreas.find((area) =>
-                          mushroom.biomes.includes(area.biome),
+                          mushroom.biomes.includes(area.biome)
                         )?.name || "unknown location"}
                       </li>
                       {mushroom.properties

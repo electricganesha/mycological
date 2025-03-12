@@ -74,13 +74,13 @@
 }
 
 .bar.health {
-  background: linear-gradient(to right, #ff4444, #ff6b6b);
+  background: linear-gradient(to right, #ff4444, #691a1a);
   box-shadow: 0 0 10px rgba(255, 68, 68, 0.3);
   height: 16px;
 }
 
 .bar.stamina {
-  background: linear-gradient(to right, #44ff44, #6bff6b);
+  background: linear-gradient(to right, #44ff44, #116311);
   box-shadow: 0 0 10px rgba(68, 255, 68, 0.3);
   height: 16px;
 }

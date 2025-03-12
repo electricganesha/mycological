@@ -10,6 +10,7 @@ import GameCanvas from "../3d/GameCanvas";
 import HexTile from "../3d/HexTile";
 import { Html } from "@react-three/drei";
 import { PlayerStats } from "../ui/PlayerStats";
+import { Inventory } from "../ui/Inventory";
 
 const ExplorationPhase: React.FC = () => {
   const { state, dispatch } = useGame();
@@ -311,6 +312,21 @@ const ExplorationPhase: React.FC = () => {
               }}
             >
               <PlayerStats />
+            </div>
+            <div
+              style={{
+                width: "200px",
+                height: "200px",
+                backgroundColor: "rgba(255, 255, 255, 0.2)",
+                position: "absolute",
+                bottom: "16px",
+                right: "16px",
+                borderRadius: "8px",
+                border: "1px solid rgba(255, 255, 255, 0.3)",
+                padding: "16px",
+              }}
+            >
+              <Inventory />
             </div>
           </div>
 
