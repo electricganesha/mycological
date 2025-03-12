@@ -1,4 +1,4 @@
-import React, { useState, Suspense } from "react";
+import React, { useState, useEffect, Suspense } from "react";
 import { useGame } from "../../context/GameContext";
 import {
   MapTile,
@@ -19,7 +19,7 @@ const ExplorationPhase: React.FC = () => {
   const { state, dispatch } = useGame();
   const [pendingEvent, setPendingEvent] = useState<{
     tile: MapTile;
-    type: string;
+    type: "mushroom" | "rest" | "danger";
   } | null>(null);
 
   const generateMushroom = (biome: BiomeType): Mushroom => {
@@ -66,33 +66,159 @@ const ExplorationPhase: React.FC = () => {
     };
   };
 
-  const handleTileClick = (tile: MapTile) => {
+  const moveDangerEvents = () => {
+    const newTiles = [...state.explorationMap.tiles];
+    const dangerTiles: MapTile[] = [];
+
+    // Find all danger tiles
+    newTiles.forEach((row) => {
+      row.forEach((tile) => {
+        if (tile.hasEvent && tile.eventType === "danger") {
+          dangerTiles.push(tile);
+        }
+      });
+    });
+
+    // Remove old danger events
+    dangerTiles.forEach((tile) => {
+      newTiles[tile.y][tile.x] = {
+        ...tile,
+        hasEvent: false,
+        eventType: undefined,
+      };
+    });
+
+    // Place danger events in new random locations
+    dangerTiles.forEach(() => {
+      let placed = false;
+      while (!placed) {
+        const newX = Math.floor(Math.random() * state.explorationMap.width);
+        const newY = Math.floor(Math.random() * state.explorationMap.height);
+        const targetTile = newTiles[newY][newX];
+
+        // Don't place on player, player-adjacent tiles, or tiles with events
+        const isPlayerAdjacent = getAdjacentTiles(
+          state.explorationMap.playerPosition.x,
+          state.explorationMap.playerPosition.y,
+          state.explorationMap.width,
+          state.explorationMap.height
+        ).some((pos) => pos.x === newX && pos.y === newY);
+
+        if (
+          !targetTile.hasEvent &&
+          !(
+            newX === state.explorationMap.playerPosition.x &&
+            newY === state.explorationMap.playerPosition.y
+          ) &&
+          !isPlayerAdjacent
+        ) {
+          newTiles[newY][newX] = {
+            ...targetTile,
+            hasEvent: true,
+            eventType: "danger",
+          };
+          placed = true;
+        }
+      }
+    });
+
+    dispatch({
+      type: "UPDATE_MAP_TILES",
+      payload: newTiles,
+    });
+  };
+
+  const canMoveToTile = (
+    tile: MapTile
+  ): { canMove: boolean; reason?: string } => {
     const { x, y } = tile;
     const { playerPosition, width, height } = state.explorationMap;
 
+    // Check if tile is adjacent
     const adjacentTiles = getAdjacentTiles(
       playerPosition.x,
       playerPosition.y,
       width,
       height
     );
-    const isAdjacent = adjacentTiles.some((pos) => pos.x === x && pos.y === y);
+    if (!adjacentTiles.some((pos) => pos.x === x && pos.y === y)) {
+      return { canMove: false, reason: "You can only move to adjacent tiles." };
+    }
 
-    if (!isAdjacent) return;
+    // Check stamina cost
+    const terrainProps = getTerrainProperties(tile.type);
+    const costs = terrainProps.costs;
+    if (state.player.stamina < costs.stamina) {
+      return {
+        canMove: false,
+        reason: `Not enough stamina! Need ${costs.stamina} stamina to move here.`,
+      };
+    }
+
+    // Check if health cost would kill the player
+    if (costs.health > 0 && state.player.health <= costs.health) {
+      return {
+        canMove: false,
+        reason: `Too dangerous! Moving here would be fatal.`,
+      };
+    }
+
+    return { canMove: true };
+  };
+
+  const [warningMessage, setWarningMessage] = useState<string | null>(null);
+
+  useEffect(() => {
+    // Clear warning message after 3 seconds
+    if (warningMessage) {
+      const timer = setTimeout(() => {
+        setWarningMessage(null);
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [warningMessage]);
+
+  const handleTileClick = (tile: MapTile) => {
+    const { canMove, reason } = canMoveToTile(tile);
+
+    if (!canMove) {
+      if (reason) {
+        setWarningMessage(reason);
+      }
+      return;
+    }
 
     const terrainProps = getTerrainProperties(tile.type);
     const costs = terrainProps.costs;
-    if (state.player.stamina < costs.stamina) return;
 
-    dispatch({ type: "MOVE_PLAYER", payload: { x, y } });
+    // Move player
+    dispatch({ type: "MOVE_PLAYER", payload: { x: tile.x, y: tile.y } });
     dispatch({ type: "UPDATE_STAMINA", payload: -costs.stamina });
     if (costs.health > 0) {
       dispatch({ type: "UPDATE_HEALTH", payload: -costs.health });
     }
 
+    // Handle any events on the tile
     if (tile.hasEvent) {
       handleEvent(tile);
     }
+
+    // Move danger events after player moves
+    moveDangerEvents();
+  };
+
+  const handleRest = () => {
+    if (!pendingEvent) return;
+
+    const { tile } = pendingEvent;
+    dispatch({
+      type: "UPDATE_STAMINA",
+      payload: Math.min(50, state.player.maxStamina - state.player.stamina),
+    });
+    dispatch({ type: "UPDATE_HEALTH", payload: 10 });
+    dispatch({ type: "TRIGGER_EVENT", payload: { x: tile.x, y: tile.y } });
+    dispatch({ type: "ADVANCE_DAY" });
+    setPendingEvent(null);
   };
 
   const handleEvent = (tile: MapTile) => {
@@ -101,16 +227,10 @@ const ExplorationPhase: React.FC = () => {
         setPendingEvent({ tile, type: "mushroom" });
         break;
       case "danger":
-        dispatch({ type: "UPDATE_HEALTH", payload: -20 });
-        dispatch({ type: "TRIGGER_EVENT", payload: { x: tile.x, y: tile.y } });
+        setPendingEvent({ tile, type: "danger" });
         break;
       case "rest":
-        dispatch({
-          type: "UPDATE_STAMINA",
-          payload: Math.min(50, state.player.maxStamina - state.player.stamina),
-        });
-        dispatch({ type: "UPDATE_HEALTH", payload: 10 });
-        dispatch({ type: "TRIGGER_EVENT", payload: { x: tile.x, y: tile.y } });
+        setPendingEvent({ tile, type: "rest" });
         break;
     }
   };
@@ -153,7 +273,6 @@ const ExplorationPhase: React.FC = () => {
 
       {!isGameOver && (
         <>
-          <h2>Exploration</h2>
           <div className="exploration-scene">
             <GameCanvas>
               <Suspense fallback={null}>
@@ -184,13 +303,13 @@ const ExplorationPhase: React.FC = () => {
             </GameCanvas>
           </div>
 
-          {state.player.stamina < 10 && (
+          {(warningMessage || state.player.stamina < 10) && (
             <div className="warning-message overlay">
-              Not enough stamina to move! Rest to recover.
+              {warningMessage || "Not enough stamina to move! Rest to recover."}
             </div>
           )}
 
-          {pendingEvent && pendingEvent.type === "mushroom" && (
+          {pendingEvent?.type === "mushroom" && (
             <div className="event-dialog overlay">
               {(() => {
                 const mushroom = generateMushroom(pendingEvent.tile.type);
@@ -297,6 +416,100 @@ const ExplorationPhase: React.FC = () => {
                   </>
                 );
               })()}
+            </div>
+          )}
+
+          {pendingEvent?.type === "danger" && (
+            <div className="event-dialog overlay">
+              {(() => {
+                const dangerTypes = [
+                  {
+                    name: "Wild Animal",
+                    description: "A fierce creature attacks from the shadows!",
+                    damage: Math.floor(Math.random() * 10) + 15, // 15-25 damage
+                    image: "🐺",
+                  },
+                  {
+                    name: "Hidden Trap",
+                    description: "You stumble into a concealed hunting trap!",
+                    damage: Math.floor(Math.random() * 15) + 10, // 10-25 damage
+                    image: "⚔️",
+                  },
+                  {
+                    name: "Poisonous Plants",
+                    description: "You brush against some toxic vegetation!",
+                    damage: Math.floor(Math.random() * 10) + 10, // 10-20 damage
+                    image: "🌿",
+                  },
+                  {
+                    name: "Treacherous Ground",
+                    description: "The ground gives way beneath your feet!",
+                    damage: Math.floor(Math.random() * 15) + 5, // 5-20 damage
+                    image: "⚡",
+                  },
+                ];
+
+                const danger =
+                  dangerTypes[Math.floor(Math.random() * dangerTypes.length)];
+
+                const handleContinue = () => {
+                  dispatch({ type: "UPDATE_HEALTH", payload: -danger.damage });
+                  dispatch({
+                    type: "TRIGGER_EVENT",
+                    payload: { x: pendingEvent.tile.x, y: pendingEvent.tile.y },
+                  });
+                  setPendingEvent(null);
+                };
+
+                return (
+                  <>
+                    <div className="danger-header">
+                      <span className="danger-icon">{danger.image}</span>
+                      <h3>{danger.name}!</h3>
+                    </div>
+                    <p>{danger.description}</p>
+                    <div className="damage-display">
+                      <span className="damage-text">-{danger.damage}</span>
+                      <span className="damage-icon">❤️</span>
+                    </div>
+                    <div className="button-row">
+                      <button
+                        className="danger-button"
+                        onClick={handleContinue}
+                      >
+                        Continue
+                      </button>
+                    </div>
+                  </>
+                );
+              })()}
+            </div>
+          )}
+
+          {pendingEvent?.type === "rest" && (
+            <div className="event-dialog overlay">
+              <h3>Rest Area Found!</h3>
+              <p>Would you like to rest here? This will:</p>
+              <ul style={{ textAlign: "left", margin: "1rem 0" }}>
+                <li>
+                  Restore{" "}
+                  {Math.min(50, state.player.maxStamina - state.player.stamina)}{" "}
+                  stamina
+                </li>
+                <li>Heal 10 health points</li>
+                <li>Advance to the next day</li>
+              </ul>
+              <div className="button-row">
+                <button className="collect-button" onClick={handleRest}>
+                  Rest
+                </button>
+                <button
+                  className="cancel-button"
+                  onClick={() => setPendingEvent(null)}
+                >
+                  Continue Exploring
+                </button>
+              </div>
             </div>
           )}
         </>
@@ -632,6 +845,49 @@ const ExplorationPhase: React.FC = () => {
           color: #FFD700;
           font-weight: bold;
           text-shadow: 0 0 5px rgba(255, 215, 0, 0.3);
+        }
+        .danger-header {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 10px;
+          margin-bottom: 1rem;
+        }
+
+        .danger-icon {
+          font-size: 2rem;
+          animation: dangerPulse 2s infinite;
+        }
+
+        .damage-display {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 8px;
+          margin: 1.5rem 0;
+          font-size: 1.5rem;
+        }
+
+        .damage-text {
+          color: #ff4444;
+          font-weight: bold;
+          font-size: 2rem;
+        }
+
+        .danger-button {
+          background: linear-gradient(45deg, #d32f2f, #f44336);
+          color: white;
+          animation: dangerPulse 2s infinite;
+        }
+
+        .danger-button:hover {
+          background: linear-gradient(45deg, #f44336, #e57373);
+        }
+
+        @keyframes dangerPulse {
+          0% { transform: scale(1); }
+          50% { transform: scale(1.1); }
+          100% { transform: scale(1); }
         }
       `}</style>
     </div>

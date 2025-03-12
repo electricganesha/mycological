@@ -1,4 +1,4 @@
-export type BiomeType = "forest" | "mountain" | "swamp" | "cave";
+export type BiomeType = "forest" | "mountain" | "swamp" | "cave" | "meadow";
 
 export type MushroomType = "bolete" | "morel" | "chanterelle" | "russula";
 export type MushroomRarity = "common" | "rare" | "legendary";
@@ -43,22 +43,57 @@ export interface Mushroom {
 
 export type GamePhase = "exploration" | "identification" | "shop" | "crafting";
 
+export interface Companion {
+  id: string;
+  name: string;
+  type: string;
+  skills: string[];
+  imageUrl: string;
+}
+
 export interface Player {
   name: string;
   health: number;
   maxHealth: number;
   stamina: number;
   maxStamina: number;
+  skills: string[];
+  companions: Companion[];
+}
+
+export interface Shop {
+  id: string;
+  name: string;
+  level: number;
+  reputation: number;
+  upgrades: string[];
+  inventory: any[];
+  cash: number;
+}
+
+export interface ExplorationArea {
+  id: string;
+  name: string;
+  description: string;
+  biome: BiomeType;
+}
+
+export interface InventoryItem {
+  id: string;
+  mushroom: Mushroom;
+  quantity: number;
+  quality: number;
+  price?: number;
 }
 
 export interface GameState {
+  shop: Shop;
+  knownMushrooms: Mushroom[];
+  discoveredAreas: ExplorationArea[];
+  currentArea?: ExplorationArea;
   currentDay: number;
   gamePhase: GamePhase;
   player: Player;
   explorationMap: GameMap;
-  inventory: {
-    mushroom: Mushroom;
-    quantity: number;
-    quality: number;
-  }[];
+  inventory: InventoryItem[];
 }

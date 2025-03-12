@@ -2,8 +2,8 @@ import { BiomeType, MapTile, GameMap } from "../types";
 import { getTerrainProperties } from "./terrainUtils";
 
 const getRandomBiome = (): BiomeType => {
-  const biomes: BiomeType[] = ["forest", "mountain", "swamp", "cave"];
-  const weights = [0.4, 0.2, 0.2, 0.2]; // Forest is more common
+  const biomes: BiomeType[] = ["forest", "mountain", "swamp", "cave", "meadow"];
+  const weights = [0.3, 0.15, 0.15, 0.15, 0.25]; // Forest and meadow are more common
   const totalWeight = weights.reduce((a, b) => a + b, 0);
   const random = Math.random() * totalWeight;
 
@@ -22,26 +22,29 @@ export const getAdjacentTiles = (
   x: number,
   y: number,
   width: number,
-  height: number,
+  height: number
 ): { x: number; y: number }[] => {
   // For a pointy-top hex grid, odd rows are offset
   const isOddRow = y % 2 === 1;
-  const offsets = [
-    // Even rows           // Odd rows
-    [-1, 0], // Left      [-1, 0]
-    [1, 0], // Right     [1, 0]
-    [0, -1], // Up-Left   [-1, -1]
-    [1, -1], // Up-Right  [0, -1]
-    [0, 1], // Down-Left [-1, 1]
-    [1, 1], // Down-Right[0, 1]
-  ]
-    .map(([dx, dy]) => [dx + (isOddRow ? -0.5 : 0), dy])
-    .map(([dx, dy]) => ({
-      x: Math.round(x + dx),
-      y: y + dy,
-    }));
+  // For pointy-top hexagonal grid in odd-row offset coordinates
+  // Each hex has 6 neighbors: two horizontal and four diagonal
+  const neighbors: Array<[number, number]> = [
+    [-1, 0], // West
+    [1, 0], // East
+    [isOddRow ? 0 : -1, -1], // Northwest
+    [isOddRow ? 1 : 0, -1], // Northeast
+    [isOddRow ? 0 : -1, 1], // Southwest
+    [isOddRow ? 1 : 0, 1], // Southeast
+  ];
 
-  return offsets.filter(({ x, y }) => isInBounds(x, y, width, height));
+  const adjacentPositions = neighbors.map(([dx, dy]) => ({
+    x: x + dx,
+    y: y + dy,
+  }));
+
+  return adjacentPositions.filter((pos) =>
+    isInBounds(pos.x, pos.y, width, height)
+  );
 };
 
 // Check if a tile is within map bounds
@@ -49,14 +52,14 @@ export const isInBounds = (
   x: number,
   y: number,
   width: number,
-  height: number,
+  height: number
 ): boolean => {
   return x >= 0 && x < width && y >= 0 && y < height;
 };
 
 // Generate random events for tiles based on terrain properties
 const generateEvent = (
-  biome: BiomeType,
+  biome: BiomeType
 ): { hasEvent: boolean; eventType?: "mushroom" | "danger" | "rest" } => {
   const properties = getTerrainProperties(biome);
   const chance = Math.random();

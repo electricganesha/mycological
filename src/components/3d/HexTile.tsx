@@ -12,7 +12,7 @@ import {
 
 interface HexTileProps {
   position: [number, number, number];
-  type: "forest" | "mountain" | "swamp" | "cave";
+  type: "forest" | "mountain" | "swamp" | "cave" | "meadow";
   size?: number;
   isAdjacent?: boolean;
   isDiscovered?: boolean;
@@ -28,7 +28,7 @@ const TerrainDecoration = ({
   scale,
   rotation,
 }: {
-  type: "tree" | "peak" | "puddle" | "stalagmite";
+  type: "tree" | "peak" | "puddle" | "stalagmite" | "flower";
   position: [number, number, number];
   scale: number;
   rotation: number;
@@ -154,6 +154,36 @@ const TerrainDecoration = ({
           </mesh>
         </group>
       );
+    case "flower":
+      return (
+        <group position={position} rotation={[0, rotation, 0]} scale={scale}>
+          {/* Stem */}
+          <mesh position={[0, 0.2, 0]}>
+            <cylinderGeometry args={[0.02, 0.02, 0.4, 4]} />
+            <meshStandardMaterial color="#4CAF50" />
+          </mesh>
+          {/* Petals */}
+          {[0, 72, 144, 216, 288].map((angle) => (
+            <mesh
+              key={angle}
+              position={[0, 0.4, 0]}
+              rotation={[0, (angle * Math.PI) / 180, 0]}
+            >
+              <sphereGeometry args={[0.08, 8, 8]} />
+              <meshStandardMaterial
+                color={Math.random() > 0.5 ? "#FFD700" : "#FF69B4"}
+                metalness={0.1}
+                roughness={0.8}
+              />
+            </mesh>
+          ))}
+          {/* Center */}
+          <mesh position={[0, 0.4, 0]}>
+            <sphereGeometry args={[0.06, 8, 8]} />
+            <meshStandardMaterial color="#FFA000" />
+          </mesh>
+        </group>
+      );
   }
 };
 
@@ -185,7 +215,7 @@ const HexTile = ({
     if (!isDiscovered) return [];
 
     const elements: Array<{
-      type: "tree" | "peak" | "puddle" | "stalagmite";
+      type: "tree" | "peak" | "puddle" | "stalagmite" | "flower";
       position: [number, number, number];
       scale: number;
       rotation: number;
@@ -265,6 +295,24 @@ const HexTile = ({
           });
         }
         break;
+
+      case "meadow":
+        // Add 8-12 flowers
+        const numFlowers = Math.floor(random(8, 13));
+        for (let i = 0; i < numFlowers; i++) {
+          const angle = random(0, Math.PI * 2);
+          const radius = random(0.2, 0.8);
+          const x = Math.cos(angle) * radius * size;
+          const z = Math.sin(angle) * radius * size;
+          const scale = random(0.4, 0.7);
+          elements.push({
+            type: "flower",
+            position: [x, 0, z],
+            scale,
+            rotation: random(0, Math.PI * 2),
+          });
+        }
+        break;
     }
 
     return elements;
@@ -282,6 +330,8 @@ const HexTile = ({
         return "#33691E"; // Darker swamp green
       case "cave":
         return "#3E2723"; // Darker brown
+      case "meadow":
+        return "#8BC34A"; // Light green for meadow
       default:
         return "#81C784";
     }
@@ -391,11 +441,21 @@ const HexTile = ({
       )}
 
       {/* Adjacent tile indicator */}
-      {isAdjacent && hovered && (
-        <mesh position={[0, 0.05, 0]}>
-          <cylinderGeometry args={[size * 1.05, size * 1.05, 0.05, 6]} />
-          <meshBasicMaterial color="#ffffff" opacity={0.2} transparent />
-        </mesh>
+      {isAdjacent && (
+        <>
+          {/* Highlight border for adjacent tiles */}
+          <mesh position={[0, 0.02, 0]}>
+            <cylinderGeometry args={[size * 1.02, size * 1.02, 0.02, 6]} />
+            <meshBasicMaterial color="#4CAF50" opacity={0.3} transparent />
+          </mesh>
+          {/* Extra highlight when hovered */}
+          {hovered && (
+            <mesh position={[0, 0.05, 0]}>
+              <cylinderGeometry args={[size * 1.05, size * 1.05, 0.05, 6]} />
+              <meshBasicMaterial color="#ffffff" opacity={0.2} transparent />
+            </mesh>
+          )}
+        </>
       )}
     </group>
   );

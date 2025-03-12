@@ -5,6 +5,7 @@ import {
   ExplorationArea,
   InventoryItem,
   GameMap,
+  MapTile,
 } from "../types";
 import { mushrooms } from "../data/mushrooms";
 import { explorationAreas } from "../data/areas";
@@ -77,7 +78,8 @@ type GameAction =
   | { type: "UPDATE_REPUTATION"; payload: number }
   | { type: "MOVE_PLAYER"; payload: { x: number; y: number } }
   | { type: "GENERATE_NEW_MAP"; payload: { width: number; height: number } }
-  | { type: "TRIGGER_EVENT"; payload: { x: number; y: number } };
+  | { type: "TRIGGER_EVENT"; payload: { x: number; y: number } }
+  | { type: "UPDATE_MAP_TILES"; payload: MapTile[][] };
 
 // Reducer function
 function gameReducer(state: GameState, action: GameAction): GameState {
@@ -107,7 +109,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         ...state,
         explorationMap: generateMap(
           action.payload.width,
-          action.payload.height,
+          action.payload.height
         ),
       };
 
@@ -128,7 +130,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
     case "UPDATE_HEALTH": {
       const newHealth = Math.max(
         0,
-        Math.min(state.player.maxHealth, state.player.health + action.payload),
+        Math.min(state.player.maxHealth, state.player.health + action.payload)
       );
       return {
         ...state,
@@ -184,7 +186,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       const { mushroom, quantity, quality } = action.payload;
 
       const existingItemIndex = state.inventory.findIndex(
-        (item) => item.mushroomId === mushroom.id && item.quality === quality,
+        (item) => item.mushroom.id === mushroom.id && item.quality === quality
       );
 
       let updatedInventory;
@@ -199,7 +201,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
           ...state.inventory,
           {
             id: `${mushroom.id}-${Date.now()}`,
-            mushroomId: mushroom.id,
+            mushroom,
             quantity,
             quality,
             price: 0,
@@ -237,7 +239,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       let updatedInventory;
       if (item.quantity <= quantity) {
         updatedInventory = state.inventory.filter(
-          (_, index) => index !== itemIndex,
+          (_, index) => index !== itemIndex
         );
       } else {
         updatedInventory = [...state.inventory];
@@ -262,7 +264,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
 
       for (const ingredient of action.payload.ingredients) {
         const itemIndex = updatedInventory.findIndex(
-          (item) => item.id === ingredient.id,
+          (item) => item.id === ingredient.id
         );
         if (itemIndex >= 0) {
           if (updatedInventory[itemIndex].quantity <= ingredient.quantity) {
@@ -316,16 +318,23 @@ function gameReducer(state: GameState, action: GameAction): GameState {
     case "UPDATE_STAMINA": {
       const newStamina = Math.max(
         0,
-        Math.min(
-          state.player.maxStamina,
-          state.player.stamina + action.payload,
-        ),
+        Math.min(state.player.maxStamina, state.player.stamina + action.payload)
       );
       return {
         ...state,
         player: {
           ...state.player,
           stamina: newStamina,
+        },
+      };
+    }
+
+    case "UPDATE_MAP_TILES": {
+      return {
+        ...state,
+        explorationMap: {
+          ...state.explorationMap,
+          tiles: action.payload,
         },
       };
     }

@@ -26,7 +26,7 @@ export const getTerrainProperties = (type: BiomeType): TerrainProperties => {
         description: "Steep terrain requires more stamina to traverse.",
         mushroomChance: 0.1, // 10% chance
         dangerChance: 0.15, // 15% chance
-        restChance: 0.05, // 5% chance
+        restChance: 0.15, // 15% chance
         mushrooms: {
           common: ["bolete", "russula"],
           rare: ["chanterelle"],
@@ -39,7 +39,7 @@ export const getTerrainProperties = (type: BiomeType): TerrainProperties => {
         description: "Hazardous terrain damages health and drains stamina.",
         mushroomChance: 0.2, // 20% chance
         dangerChance: 0.15, // 15% chance
-        restChance: 0.05, // 5% chance
+        restChance: 0.15, // 15% chance
         mushrooms: {
           common: ["russula"],
           rare: ["morel"],
@@ -52,11 +52,24 @@ export const getTerrainProperties = (type: BiomeType): TerrainProperties => {
         description: "Dark and dangerous, but easier to move through.",
         mushroomChance: 0.25, // 25% chance
         dangerChance: 0.2, // 20% chance
-        restChance: 0.05, // 5% chance
+        restChance: 0.15, // 15% chance
         mushrooms: {
           common: ["morel"],
           rare: ["bolete"],
           legendary: ["russula"],
+        },
+      };
+    case "meadow":
+      return {
+        costs: { stamina: 8, health: 0 },
+        description: "Open fields with easy terrain and abundant mushrooms.",
+        mushroomChance: 0.25, // 25% chance - good for mushrooms
+        dangerChance: 0.05, // 5% chance - very safe
+        restChance: 0.15, // 15% chance
+        mushrooms: {
+          common: ["bolete", "chanterelle"],
+          rare: ["russula"],
+          legendary: ["morel"],
         },
       };
     case "forest":
@@ -66,7 +79,7 @@ export const getTerrainProperties = (type: BiomeType): TerrainProperties => {
         description: "Standard terrain with balanced stamina cost.",
         mushroomChance: 0.15, // 15% chance
         dangerChance: 0.1, // 10% chance
-        restChance: 0.1, // 10% chance
+        restChance: 0.15, // 15% chance
         mushrooms: {
           common: ["bolete", "russula"],
           rare: ["morel"],

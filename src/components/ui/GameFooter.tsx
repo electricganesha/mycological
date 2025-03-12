@@ -2,11 +2,7 @@ import React from "react";
 import { useGame } from "../../context/GameContext";
 
 const GameFooter: React.FC = () => {
-  const { state, dispatch } = useGame();
-
-  const handleNextDay = () => {
-    dispatch({ type: "ADVANCE_DAY" });
-  };
+  const { state } = useGame();
 
   return (
     <footer className="game-footer">
@@ -29,9 +25,6 @@ const GameFooter: React.FC = () => {
               ))}
             </div>
           </div>
-          <button onClick={handleNextDay} className="next-day-button">
-            Rest and Continue to Next Day
-          </button>
         </div>
         <div className="player-skills">
           <h4>Skills:</h4>
