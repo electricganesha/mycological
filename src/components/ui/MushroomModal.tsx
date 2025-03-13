@@ -78,7 +78,7 @@ export const MushroomModal: FC<MushroomModalProps> = ({
 
   return (
     <>
-      <h3>Found {mushroom.name}!</h3>
+      <h3>Found a mushroom!</h3>
       <MushroomInfo>
         <RarityBadge rarity={mushroom.rarity}>
           {mushroom.rarity.toUpperCase()}
@@ -86,6 +86,12 @@ export const MushroomModal: FC<MushroomModalProps> = ({
         {isPreferredBiome && <NativeBadge>NATIVE</NativeBadge>}
       </MushroomInfo>
       <p>{mushroom.description}</p>
+      <p>
+        <i>
+          This mushroom needs to be identified before you can learn more about
+          it.
+        </i>
+      </p>
       <p>
         Quality:{" "}
         <QualityStars title={`Quality Rating: ${finalQuality}/100`}>

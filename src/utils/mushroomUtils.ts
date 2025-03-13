@@ -23,16 +23,23 @@ export const generateMushroom = (biome: BiomeType): Mushroom => {
     (rarity === "legendary" ? 100 : rarity === "rare" ? 50 : 10) *
     (isPreferredBiome ? 1.5 : 1);
 
+  const unidentifiedName = "Unknown Mushroom";
+  const unidentifiedDescription = `An unidentified ${rarity} mushroom found in ${biome} terrain${isPreferredBiome ? " (native habitat)" : ""}.`;
+  const realName = `Wild ${mushroomType.charAt(0).toUpperCase() + mushroomType.slice(1)}`;
+  const realDescription = `A ${rarity} ${mushroomType} found in ${biome} terrain${isPreferredBiome ? " (native habitat)" : ""}.`;
+
   return {
     id: "mushroom-" + Date.now(),
-    name: `Wild ${mushroomType.charAt(0).toUpperCase() + mushroomType.slice(1)}`,
+    name: unidentifiedName,
+    displayName: realName, // Store real name separately
     type: mushroomType,
     rarity,
     biomes: [biome],
     properties: [],
     baseValue,
     scientificName: "Unknown",
-    description: `A ${rarity} ${mushroomType} found in ${biome} terrain${isPreferredBiome ? " (native habitat)" : ""}.`,
+    description: unidentifiedDescription,
+    realDescription, // Store real description separately
     imageUrl: "",
     identified: false,
     color:

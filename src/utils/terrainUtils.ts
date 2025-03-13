@@ -16,6 +16,7 @@ interface TerrainProperties {
   mushrooms: {
     common: MushroomType[];
     rare: MushroomType[];
+    uncommon: MushroomType[];
     legendary: MushroomType[];
   };
 }
@@ -32,6 +33,7 @@ export const getTerrainProperties = (type: BiomeType): TerrainProperties => {
         mushrooms: {
           common: [],
           rare: [],
+          uncommon: [],
           legendary: [],
         },
       };
@@ -45,6 +47,7 @@ export const getTerrainProperties = (type: BiomeType): TerrainProperties => {
         mushrooms: {
           common: ["bolete", "russula"],
           rare: ["chanterelle"],
+          uncommon: ["morel"],
           legendary: ["morel"],
         },
       };
@@ -58,6 +61,7 @@ export const getTerrainProperties = (type: BiomeType): TerrainProperties => {
         mushrooms: {
           common: ["russula"],
           rare: ["morel"],
+          uncommon: ["bolete"],
           legendary: ["chanterelle"],
         },
       };
@@ -71,6 +75,7 @@ export const getTerrainProperties = (type: BiomeType): TerrainProperties => {
         mushrooms: {
           common: ["morel"],
           rare: ["bolete"],
+          uncommon: ["chanterelle"],
           legendary: ["russula"],
         },
       };
@@ -84,6 +89,7 @@ export const getTerrainProperties = (type: BiomeType): TerrainProperties => {
         mushrooms: {
           common: ["bolete", "chanterelle"],
           rare: ["russula"],
+          uncommon: ["russula"],
           legendary: ["morel"],
         },
       };
@@ -98,6 +104,7 @@ export const getTerrainProperties = (type: BiomeType): TerrainProperties => {
         mushrooms: {
           common: ["bolete", "russula"],
           rare: ["morel"],
+          uncommon: ["russula"],
           legendary: ["chanterelle"],
         },
       };

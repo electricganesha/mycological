@@ -223,16 +223,36 @@ function gameReducer(state: GameState, action: GameAction): GameState {
     }
 
     case "IDENTIFY_MUSHROOM": {
-      if (!state.knownMushrooms.some((m) => m.id === action.payload.id)) {
-        return {
-          ...state,
-          knownMushrooms: [
-            ...state.knownMushrooms,
-            { ...action.payload, identified: true },
-          ],
-        };
+      const identifiedMushroom = action.payload;
+
+      // Add to known mushrooms if not already known
+      if (
+        !state.knownMushrooms.some((m) => m.type === identifiedMushroom.type)
+      ) {
+        state.knownMushrooms.push(identifiedMushroom);
       }
-      return state;
+
+      // Update all matching unidentified mushrooms in inventory
+      const updatedInventory = state.inventory.map((item) => {
+        if (item.mushroom.type === identifiedMushroom.type) {
+          return {
+            ...item,
+            mushroom: {
+              ...item.mushroom,
+              identified: true,
+              name: item.mushroom.displayName,
+              description: item.mushroom.realDescription,
+            },
+          };
+        }
+        return item;
+      });
+
+      return {
+        ...state,
+        inventory: updatedInventory,
+        knownMushrooms: [...state.knownMushrooms],
+      };
     }
 
     case "SELL_MUSHROOM": {

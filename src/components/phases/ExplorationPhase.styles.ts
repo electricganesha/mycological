@@ -198,7 +198,7 @@ export const CancelButton = styled.button`
 `;
 
 export const RarityBadge = styled.span<{
-  rarity: "legendary" | "rare" | "common";
+  rarity: "legendary" | "rare" | "common" | "uncommon";
 }>`
   padding: 4px 8px;
   border-radius: 4px;

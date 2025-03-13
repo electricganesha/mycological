@@ -26,7 +26,11 @@ export const Inventory: FC = () => {
                 </TableCell>
                 <TableCell>{item.quantity}</TableCell>
                 <TableCell>
-                  <b>{item.mushroom.name}</b>
+                  <b>
+                    {item.mushroom.identified
+                      ? item.mushroom.displayName
+                      : item.mushroom.name}
+                  </b>
                 </TableCell>
                 <TableCell>{item.quality}%</TableCell>
               </TableRow>

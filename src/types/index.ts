@@ -6,8 +6,28 @@ export type BiomeType =
   | "meadow"
   | "empty";
 
-export type MushroomType = "bolete" | "morel" | "chanterelle" | "russula";
-export type MushroomRarity = "common" | "rare" | "legendary";
+export type MushroomType =
+  | "bolete"
+  | "morel"
+  | "chanterelle"
+  | "russula"
+  | "reishi"
+  | "agaricus"
+  | "amanita"
+  | "coprinus"
+  | "lactarius"
+  | "psilocybe"
+  | "pleurotus"
+  | "morchella"
+  | "tricholoma"
+  | "hygrocybe"
+  | "cortinarius"
+  | "clavaria"
+  | "suillus"
+  | "hebeloma"
+  | "entoloma"
+  | "armillaria";
+export type MushroomRarity = "common" | "uncommon" | "rare" | "legendary";
 
 export type EventType = "mushroom" | "danger" | "rest";
 
@@ -42,6 +62,7 @@ export interface GameMap {
 export interface Mushroom {
   id: string;
   name: string;
+  displayName: string; // Real name of the mushroom
   type: MushroomType;
   rarity: MushroomRarity;
   biomes: BiomeType[];
@@ -49,6 +70,7 @@ export interface Mushroom {
   baseValue: number;
   scientificName: string;
   description: string;
+  realDescription: string; // Real description of the mushroom
   imageUrl: string;
   identified: boolean;
   color: string;
