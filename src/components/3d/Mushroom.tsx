@@ -1,7 +1,7 @@
 import { useRef, useEffect } from "react";
-import { Mesh, Vector3 } from "three";
+import { Mesh, Group, Object3D } from "three";
 import { useFrame } from "@react-three/fiber";
-import { useSpring, animated } from "@react-spring/three";
+import { gsap } from "gsap";
 
 interface MushroomProps {
   position: [number, number, number];
@@ -15,14 +15,47 @@ const Mushroom = ({
   scale = 1,
 }: MushroomProps) => {
   const mushroomRef = useRef<Mesh>(null);
+  const groupRef = useRef<Group>(null);
   const startY = position[1] - 1;
 
   // Animated appearance
-  const { y, opacity } = useSpring({
-    from: { y: startY, opacity: 0 },
-    to: { y: position[1], opacity: 1 },
-    config: { mass: 1, tension: 280, friction: 60 },
-  });
+  useEffect(() => {
+    if (groupRef.current) {
+      const timeline = gsap.timeline();
+
+      // Animate position and opacity
+      timeline.fromTo(
+        groupRef.current.position,
+        { y: startY },
+        {
+          y: position[1],
+          duration: 1,
+          ease: "back.out(1.2)",
+        }
+      );
+
+      // Animate materials opacity
+      groupRef.current.children.forEach((child: Object3D) => {
+        if (!(child instanceof Mesh)) return;
+        if (child.material && "opacity" in child.material) {
+          timeline.fromTo(
+            child.material,
+            { opacity: 0 },
+            {
+              opacity: 1,
+              duration: 0.8,
+              ease: "power2.inOut",
+            },
+            "<"
+          );
+        }
+      });
+
+      return () => {
+        timeline.kill();
+      };
+    }
+  }, [startY, position]);
 
   // Gentle swaying animation
   useFrame((state) => {
@@ -34,11 +67,10 @@ const Mushroom = ({
   });
 
   return (
-    <animated.group
-      position-y={y}
+    <group
+      ref={groupRef}
       scale={scale}
-      position-x={position[0]}
-      position-z={position[2]}
+      position={[position[0], startY, position[2]]}
     >
       {/* Stem */}
       <mesh castShadow receiveShadow position={[0, 0.4, 0]}>
@@ -53,7 +85,7 @@ const Mushroom = ({
           color={color}
           roughness={0.4}
           metalness={0.3}
-          opacity={opacity.get()}
+          opacity={1}
           transparent
         />
       </mesh>
@@ -89,7 +121,7 @@ const Mushroom = ({
           })}
         </>
       )}
-    </animated.group>
+    </group>
   );
 };
 

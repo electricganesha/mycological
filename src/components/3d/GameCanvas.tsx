@@ -5,25 +5,33 @@ import {
   SSAO,
   BrightnessContrast,
 } from "@react-three/postprocessing";
-import { ReactNode, useEffect } from "react";
-import { Color, Vector3 } from "three";
-import { useSpring, animated } from "@react-spring/three";
+import { ReactNode, useEffect, useRef } from "react";
+import { Color } from "three";
+import { gsap } from "gsap";
 
 interface GameCanvasProps {
   children: ReactNode;
   playerPosition?: [number, number, number];
 }
 
-const AnimatedOrbitControls = animated(OrbitControls);
-
 const GameCanvas = ({
   children,
   playerPosition = [0, -2, 0],
 }: GameCanvasProps) => {
-  const { target } = useSpring({
-    target: playerPosition,
-    config: { mass: 2, tension: 120, friction: 30 },
-  });
+  const controlsRef = useRef<any>(null);
+
+  useEffect(() => {
+    if (controlsRef.current) {
+      gsap.to(controlsRef.current.target, {
+        x: playerPosition[0],
+        y: playerPosition[1],
+        z: playerPosition[2],
+        duration: 1,
+        ease: "power2.out",
+        overwrite: true,
+      });
+    }
+  }, [playerPosition]);
   return (
     <Canvas
       shadows
@@ -60,13 +68,14 @@ const GameCanvas = ({
       </EffectComposer>
 
       {/* Controls */}
-      <AnimatedOrbitControls
+      <OrbitControls
+        ref={controlsRef}
         maxPolarAngle={Math.PI / 2.5}
         minPolarAngle={Math.PI / 4}
         minDistance={12}
         maxDistance={20}
         enablePan={false}
-        target={target}
+        target={[0, -2, 0]}
         enableDamping
         zoomSpeed={2}
         dampingFactor={0.1}
