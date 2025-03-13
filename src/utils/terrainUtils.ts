@@ -1,4 +1,6 @@
-import { BiomeType, MushroomType } from "../types";
+import { GameAction } from "../context/GameContext";
+import { BiomeType, MapTile, MushroomType, Position } from "../types";
+import { getAdjacentTiles } from "./mapGenerator";
 
 interface TerrainCosts {
   stamina: number;
@@ -39,7 +41,7 @@ export const getTerrainProperties = (type: BiomeType): TerrainProperties => {
         description: "Steep terrain requires more stamina to traverse.",
         mushroomChance: 0.1, // 10% chance
         dangerChance: 0.15, // 15% chance
-        restChance: 0.15, // 15% chance
+        restChance: 0.05, // 15% chance
         mushrooms: {
           common: ["bolete", "russula"],
           rare: ["chanterelle"],
@@ -52,7 +54,7 @@ export const getTerrainProperties = (type: BiomeType): TerrainProperties => {
         description: "Hazardous terrain damages health and drains stamina.",
         mushroomChance: 0.2, // 20% chance
         dangerChance: 0.15, // 15% chance
-        restChance: 0.15, // 15% chance
+        restChance: 0.05, // 15% chance
         mushrooms: {
           common: ["russula"],
           rare: ["morel"],
@@ -78,7 +80,7 @@ export const getTerrainProperties = (type: BiomeType): TerrainProperties => {
         description: "Open fields with easy terrain and abundant mushrooms.",
         mushroomChance: 0.25, // 25% chance - good for mushrooms
         dangerChance: 0.05, // 5% chance - very safe
-        restChance: 0.15, // 15% chance
+        restChance: 0.05, // 15% chance
         mushrooms: {
           common: ["bolete", "chanterelle"],
           rare: ["russula"],
@@ -92,7 +94,7 @@ export const getTerrainProperties = (type: BiomeType): TerrainProperties => {
         description: "Standard terrain with balanced stamina cost.",
         mushroomChance: 0.15, // 15% chance
         dangerChance: 0.1, // 10% chance
-        restChance: 0.15, // 15% chance
+        restChance: 0.05, // 15% chance
         mushrooms: {
           common: ["bolete", "russula"],
           rare: ["morel"],
@@ -110,14 +112,129 @@ export const getTerrainDescription = (type: BiomeType): string => {
   return getTerrainProperties(type).description;
 };
 
-// Helper function to get a random mushroom type based on rarity and biome
-export const getRandomMushroomForBiome = (
-  biome: BiomeType,
-  rarity: "common" | "rare" | "legendary"
-): MushroomType => {
-  const biomeProps = getTerrainProperties(biome);
-  const possibleMushrooms = biomeProps.mushrooms[rarity];
-  return possibleMushrooms[
-    Math.floor(Math.random() * possibleMushrooms.length)
-  ];
+export const moveDangerEvents = ({
+  tiles,
+  width,
+  height,
+  playerPosition,
+  dispatch,
+}: {
+  tiles: MapTile[][];
+  width: number;
+  height: number;
+  playerPosition: Position;
+  dispatch: (value: GameAction) => void;
+}) => {
+  const newTiles = [...tiles];
+  const dangerTiles: MapTile[] = [];
+
+  // Find all danger tiles
+  newTiles.forEach((row) => {
+    row.forEach((tile) => {
+      if (tile.hasEvent && tile.eventType === "danger") {
+        dangerTiles.push(tile);
+      }
+    });
+  });
+
+  // Remove old danger events
+  dangerTiles.forEach((tile) => {
+    newTiles[tile.y][tile.x] = {
+      ...tile,
+      hasEvent: false,
+      eventType: undefined,
+    };
+  });
+
+  // Place danger events in new random locations
+  dangerTiles.forEach(() => {
+    let placed = false;
+    while (!placed) {
+      const newX = Math.floor(Math.random() * width);
+      const newY = Math.floor(Math.random() * height);
+      const targetTile = newTiles[newY][newX];
+
+      // Don't place on player, player-adjacent tiles, or tiles with events
+      const isPlayerAdjacent = getAdjacentTiles(
+        playerPosition.x,
+        playerPosition.y,
+        width,
+        height
+      ).some((pos) => pos.x === newX && pos.y === newY);
+
+      if (
+        !targetTile.hasEvent &&
+        !(newX === playerPosition.x && newY === playerPosition.y) &&
+        !isPlayerAdjacent
+      ) {
+        newTiles[newY][newX] = {
+          ...targetTile,
+          hasEvent: true,
+          eventType: "danger",
+        };
+        placed = true;
+      }
+    }
+  });
+
+  dispatch({
+    type: "UPDATE_MAP_TILES",
+    payload: newTiles,
+  });
+};
+
+export const canMoveToTile = (
+  tile: MapTile,
+  playerPosition: Position,
+  width: number,
+  height: number,
+  stamina: number,
+  health: number
+): { canMove: boolean; reason?: string } => {
+  const { x, y } = tile;
+
+  // Check if tile is adjacent
+  const adjacentTiles = getAdjacentTiles(
+    playerPosition.x,
+    playerPosition.y,
+    width,
+    height
+  );
+  if (!adjacentTiles.some((pos) => pos.x === x && pos.y === y)) {
+    return { canMove: false, reason: "You can only move to adjacent tiles." };
+  }
+
+  // Check stamina cost
+  const terrainProps = getTerrainProperties(tile.type);
+  const costs = terrainProps.costs;
+  if (stamina < costs.stamina) {
+    return {
+      canMove: false,
+      reason: `Not enough stamina! Need ${costs.stamina} stamina to move here.`,
+    };
+  }
+
+  // Check if health cost would kill the player
+  if (costs.health > 0 && health <= costs.health) {
+    return {
+      canMove: false,
+      reason: `Too dangerous! Moving here would be fatal.`,
+    };
+  }
+
+  return { canMove: true };
+};
+
+export const getTilePosition = (
+  x: number,
+  y: number,
+  width: number,
+  height: number
+): [number, number, number] => {
+  const size = 1.2;
+  const xPos = x * size * Math.sqrt(3) + (y % 2) * ((size * Math.sqrt(3)) / 2);
+  const zPos = y * size * 1.5;
+  const visualWidth = width * size * Math.sqrt(3);
+  const visualHeight = height * size * 1.5;
+  return [xPos - visualWidth / 2, 0, zPos - visualHeight / 2];
 };

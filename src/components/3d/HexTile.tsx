@@ -1,6 +1,5 @@
 import { useRef, useState, useEffect, useMemo } from "react";
-import { Mesh, Vector3 } from "three";
-import { useFrame } from "@react-three/fiber";
+import { Mesh } from "three";
 import { Html } from "@react-three/drei";
 import EventMarker from "./EventMarker";
 import PlayerMarker from "./PlayerMarker";
@@ -9,16 +8,17 @@ import {
   getTerrainCosts,
   getTerrainDescription,
 } from "../../utils/terrainUtils";
+import { BiomeType, EventType, TerrainDecorationType } from "../../types";
 
 interface HexTileProps {
   position: [number, number, number];
-  type: "forest" | "mountain" | "swamp" | "cave" | "meadow";
+  type: BiomeType;
   size?: number;
   isAdjacent?: boolean;
   isDiscovered?: boolean;
   isPlayerPosition?: boolean;
   hasEvent?: boolean;
-  eventType?: "mushroom" | "danger" | "rest";
+  eventType?: EventType;
   onClick?: () => void;
 }
 
@@ -28,7 +28,7 @@ const TerrainDecoration = ({
   scale,
   rotation,
 }: {
-  type: "tree" | "peak" | "puddle" | "stalagmite" | "flower";
+  type: TerrainDecorationType;
   position: [number, number, number];
   scale: number;
   rotation: number;
@@ -224,7 +224,7 @@ const HexTile = ({
       Math.random() * (max - min) + min;
 
     switch (type) {
-      case "forest":
+      case "forest": {
         // Add 4-7 trees
         const numTrees = Math.floor(random(4, 8));
         for (let i = 0; i < numTrees; i++) {
@@ -241,8 +241,9 @@ const HexTile = ({
           });
         }
         break;
+      }
 
-      case "mountain":
+      case "mountain": {
         // Add 3-4 peaks
         const numPeaks = Math.floor(random(3, 5));
         for (let i = 0; i < numPeaks; i++) {
@@ -259,26 +260,28 @@ const HexTile = ({
           });
         }
         break;
+      }
 
-      case "swamp":
+      case "swamp": {
         // Add 5-7 puddles
-        const numPuddles = Math.floor(random(5, 8));
+        const numPuddles = Math.floor(random(2, 5));
         for (let i = 0; i < numPuddles; i++) {
           const angle = random(0, Math.PI * 2);
-          const radius = random(0.2, 0.7);
+          const radius = random(0.2, 0.5);
           const x = Math.cos(angle) * radius * size;
           const z = Math.sin(angle) * radius * size;
           const scale = random(0.5, 0.8);
           elements.push({
             type: "puddle",
-            position: [x, 0, z] as [number, number, number],
+            position: [x, 0.1, z] as [number, number, number],
             scale,
             rotation: random(0, Math.PI * 2),
           });
         }
         break;
+      }
 
-      case "cave":
+      case "cave": {
         // Add 4-6 stalagmites
         const numStalagmites = Math.floor(random(4, 7));
         for (let i = 0; i < numStalagmites; i++) {
@@ -295,8 +298,9 @@ const HexTile = ({
           });
         }
         break;
+      }
 
-      case "meadow":
+      case "meadow": {
         // Add 8-12 flowers
         const numFlowers = Math.floor(random(8, 13));
         for (let i = 0; i < numFlowers; i++) {
@@ -313,6 +317,7 @@ const HexTile = ({
           });
         }
         break;
+      }
     }
 
     return elements;
@@ -349,7 +354,7 @@ const HexTile = ({
         <cylinderGeometry args={[size, size, 0.1, 6]} />
         <meshStandardMaterial
           color={getTileColor()}
-          opacity={isDiscovered ? 1 : 0.3}
+          opacity={isDiscovered ? (type === "swamp" ? 0.3 : 1) : 0.3}
           transparent
           emissive={hovered ? "#ffffff" : getTileColor()}
           emissiveIntensity={0.2}

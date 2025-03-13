@@ -18,6 +18,7 @@ const GameCanvas = ({
   children,
   playerPosition = [0, -2, 0],
 }: GameCanvasProps) => {
+  /* eslint-disable  @typescript-eslint/no-explicit-any */
   const controlsRef = useRef<any>(null);
 
   useEffect(() => {

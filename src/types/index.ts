@@ -11,6 +11,13 @@ export type MushroomRarity = "common" | "rare" | "legendary";
 
 export type EventType = "mushroom" | "danger" | "rest";
 
+export type TerrainDecorationType =
+  | "tree"
+  | "peak"
+  | "puddle"
+  | "stalagmite"
+  | "flower";
+
 export interface MapTile {
   x: number;
   y: number;
@@ -73,7 +80,7 @@ export interface Shop {
   level: number;
   reputation: number;
   upgrades: string[];
-  inventory: any[];
+  inventory: unknown[];
   cash: number;
 }
 

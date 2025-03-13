@@ -1,5 +1,5 @@
 import React, { useMemo } from "react";
-import "./GameHeader.css";
+import styled from "styled-components";
 import { useGame } from "../../context/GameContext";
 
 const GameHeader: React.FC = () => {
@@ -28,31 +28,94 @@ const GameHeader: React.FC = () => {
   }, [state.currentTime.hour]);
 
   return (
-    <header className="game-header">
-      <div className="time-display">
-        <div className="time">
+    <Header>
+      <TimeDisplay>
+        <Time>
           {formatTime(state.currentTime.hour, state.currentTime.minute)}
-        </div>
-        <div className="day-info">
-          <span className="day-period">{dayPeriod}</span>
-          <span className="day-count">Day {state.currentDay}</span>
-        </div>
-      </div>
-      <nav className="phase-navigation">
+        </Time>
+        <DayInfo>
+          <DayPeriod>{dayPeriod}</DayPeriod>
+          <DayCount>Day {state.currentDay}</DayCount>
+        </DayInfo>
+      </TimeDisplay>
+      <PhaseNavigation>
         {phases.map((phase) => (
-          <button
+          <PhaseButton
             key={phase.id}
             onClick={() =>
               dispatch({ type: "CHANGE_GAME_PHASE", payload: phase.id })
             }
-            className={`phase-button ${state.gamePhase === phase.id ? "active" : ""}`}
+            isActive={state.gamePhase === phase.id}
           >
             {phase.label}
-          </button>
+          </PhaseButton>
         ))}
-      </nav>
-    </header>
+      </PhaseNavigation>
+    </Header>
   );
 };
 
 export default GameHeader;
+
+const Header = styled.header`
+  background: rgba(0, 0, 0, 0.8);
+  padding: 1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+`;
+
+const TimeDisplay = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  color: #fff;
+  background: rgba(0, 0, 0, 0.4);
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+`;
+
+const Time = styled.div`
+  font-size: 1.5rem;
+  font-weight: bold;
+  margin-bottom: 0.25rem;
+  text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+`;
+
+const DayInfo = styled.div`
+  display: flex;
+  gap: 1rem;
+  font-size: 0.9rem;
+  opacity: 0.8;
+`;
+
+const DayPeriod = styled.span`
+  color: #ffd700;
+`;
+
+const DayCount = styled.span`
+  color: #a8e6cf;
+`;
+
+const PhaseNavigation = styled.nav`
+  display: flex;
+  gap: 0.5rem;
+`;
+
+const PhaseButton = styled.button<{ isActive: boolean }>`
+  padding: 0.5rem 1rem;
+  background: ${(props) =>
+    props.isActive ? "#4a6741" : "rgba(255, 255, 255, 0.1)"};
+  border: 1px solid
+    ${(props) => (props.isActive ? "#4a6741" : "rgba(255, 255, 255, 0.2)")};
+  border-radius: 4px;
+  color: #fff;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: ${(props) =>
+      props.isActive ? "#4a6741" : "rgba(255, 255, 255, 0.2)"};
+  }
+`;

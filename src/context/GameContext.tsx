@@ -4,16 +4,10 @@ import {
   Mushroom,
   ExplorationArea,
   InventoryItem,
-  GameMap,
   MapTile,
 } from "../types";
-import { mushrooms } from "../data/mushrooms";
 import { explorationAreas } from "../data/areas";
-import {
-  generateMap,
-  getAdjacentTiles,
-  isInBounds,
-} from "../utils/mapGenerator";
+import { generateMap, getAdjacentTiles } from "../utils/mapGenerator";
 
 // Initial game state
 const initialGameState: GameState = {
@@ -55,7 +49,7 @@ const initialGameState: GameState = {
 // Action types
 import { TimeIncrement } from "../types";
 
-type GameAction =
+export type GameAction =
   | { type: "SET_PLAYER_NAME"; payload: string }
   | { type: "SET_SHOP_NAME"; payload: string }
   | { type: "CHANGE_GAME_PHASE"; payload: GameState["gamePhase"] }
