@@ -184,21 +184,30 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       const { mushroom, quantity, quality } = action.payload;
 
       const existingItemIndex = state.inventory.findIndex(
-        (item) => item.mushroom.id === mushroom.id && item.quality === quality
+        (item) => item.mushroom.type === mushroom.type
       );
 
       let updatedInventory;
       if (existingItemIndex >= 0) {
         updatedInventory = [...state.inventory];
+        const existingItem = updatedInventory[existingItemIndex];
+        // Calculate weighted average quality based on quantities
+        const newTotalQuantity = existingItem.quantity + quantity;
+        const weightedQuality = Math.round(
+          (existingItem.quality * existingItem.quantity + quality * quantity) /
+            newTotalQuantity
+        );
+
         updatedInventory[existingItemIndex] = {
-          ...updatedInventory[existingItemIndex],
-          quantity: updatedInventory[existingItemIndex].quantity + quantity,
+          ...existingItem,
+          quantity: newTotalQuantity,
+          quality: weightedQuality,
         };
       } else {
         updatedInventory = [
           ...state.inventory,
           {
-            id: `${mushroom.id}-${Date.now()}`,
+            id: `${mushroom.type}-${mushroom.rarity}`,
             mushroom,
             quantity,
             quality,
