@@ -188,12 +188,25 @@ const ExplorationPhase: React.FC = () => {
     const terrainProps = getTerrainProperties(tile.type);
     const costs = terrainProps.costs;
 
-    // Move player
+    // Move player and advance time based on terrain
     dispatch({ type: "MOVE_PLAYER", payload: { x: tile.x, y: tile.y } });
     dispatch({ type: "UPDATE_STAMINA", payload: -costs.stamina });
     if (costs.health > 0) {
       dispatch({ type: "UPDATE_HEALTH", payload: -costs.health });
     }
+
+    // Advance time based on terrain difficulty
+    const timeToMove = {
+      forest: 20,
+      mountain: 45,
+      swamp: 30,
+      cave: 25,
+      meadow: 15,
+    };
+    dispatch({
+      type: "ADVANCE_TIME",
+      payload: { minutes: timeToMove[tile.type] },
+    });
 
     // Handle any events on the tile
     if (tile.hasEvent) {
@@ -215,6 +228,11 @@ const ExplorationPhase: React.FC = () => {
     dispatch({ type: "UPDATE_HEALTH", payload: 10 });
     dispatch({ type: "TRIGGER_EVENT", payload: { x: tile.x, y: tile.y } });
     dispatch({ type: "ADVANCE_DAY" });
+    // Reset time to 6 AM when resting
+    dispatch({
+      type: "ADVANCE_TIME",
+      payload: { hours: 6, minutes: 0, reset: true },
+    });
     setPendingEvent(null);
   };
 
@@ -361,6 +379,12 @@ const ExplorationPhase: React.FC = () => {
                   : baseQuality;
 
                 const handleCollect = () => {
+                  // Collecting mushrooms takes time based on quantity
+                  dispatch({
+                    type: "ADVANCE_TIME",
+                    payload: { minutes: 15 * finalQuantity },
+                  });
+
                   dispatch({
                     type: "COLLECT_MUSHROOM",
                     payload: {

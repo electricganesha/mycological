@@ -108,7 +108,15 @@ export const generateMap = (width: number, height: number): GameMap => {
   // Set starting position in the center bottom of the map
   const startX = Math.floor(width / 2);
   const startY = height - 1;
-  tiles[startY][startX].discovered = true;
+
+  // Override the starting tile to be empty and discovered
+  tiles[startY][startX] = {
+    x: startX,
+    y: startY,
+    type: "empty",
+    discovered: true,
+    hasEvent: false,
+  };
 
   // Discover adjacent tiles to starting position
   getAdjacentTiles(startX, startY, width, height).forEach(({ x, y }) => {

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useMemo } from "react";
 import "./GameHeader.css";
 import { useGame } from "../../context/GameContext";
 
@@ -12,8 +12,32 @@ const GameHeader: React.FC = () => {
     { id: "crafting", label: "Craft" },
   ];
 
+  const formatTime = (hour: number, minute: number): string => {
+    const period = hour >= 12 ? "PM" : "AM";
+    const displayHour = hour % 12 || 12;
+    const displayMinute = minute.toString().padStart(2, "0");
+    return `${displayHour}:${displayMinute} ${period}`;
+  };
+
+  const dayPeriod = useMemo(() => {
+    const hour = state.currentTime.hour;
+    if (hour >= 5 && hour < 12) return "Morning";
+    if (hour >= 12 && hour < 17) return "Afternoon";
+    if (hour >= 17 && hour < 20) return "Evening";
+    return "Night";
+  }, [state.currentTime.hour]);
+
   return (
     <header className="game-header">
+      <div className="time-display">
+        <div className="time">
+          {formatTime(state.currentTime.hour, state.currentTime.minute)}
+        </div>
+        <div className="day-info">
+          <span className="day-period">{dayPeriod}</span>
+          <span className="day-count">Day {state.currentDay}</span>
+        </div>
+      </div>
       <nav className="phase-navigation">
         {phases.map((phase) => (
           <button

@@ -49,21 +49,6 @@ const PlayerMarker = () => {
         <boxGeometry args={[0.15, 0.1, 0.05]} />
         <meshStandardMaterial color="#283593" metalness={0.2} roughness={0.8} />
       </mesh>
-      {/* Position indicator ring */}
-      <mesh
-        ref={markerRef}
-        rotation={[Math.PI / 2, 0, 0]}
-        position={[0, 0.05, 0]}
-      >
-        <torusGeometry args={[0.4, 0.03, 16, 32]} />
-        <meshStandardMaterial
-          color="#7C4DFF"
-          emissive="#7C4DFF"
-          emissiveIntensity={0.5}
-          metalness={0.8}
-          roughness={0.2}
-        />
-      </mesh>
     </group>
   );
 };

@@ -1,4 +1,10 @@
-export type BiomeType = "forest" | "mountain" | "swamp" | "cave" | "meadow";
+export type BiomeType =
+  | "forest"
+  | "mountain"
+  | "swamp"
+  | "cave"
+  | "meadow"
+  | "empty";
 
 export type MushroomType = "bolete" | "morel" | "chanterelle" | "russula";
 export type MushroomRarity = "common" | "rare" | "legendary";
@@ -86,12 +92,24 @@ export interface InventoryItem {
   price?: number;
 }
 
+export interface TimeOfDay {
+  hour: number;
+  minute: number;
+}
+
+export interface TimeIncrement {
+  hours?: number;
+  minutes?: number;
+  reset?: boolean;
+}
+
 export interface GameState {
   shop: Shop;
   knownMushrooms: Mushroom[];
   discoveredAreas: ExplorationArea[];
   currentArea?: ExplorationArea;
   currentDay: number;
+  currentTime: TimeOfDay;
   gamePhase: GamePhase;
   player: Player;
   explorationMap: GameMap;

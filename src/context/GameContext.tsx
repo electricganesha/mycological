@@ -47,11 +47,14 @@ const initialGameState: GameState = {
   knownMushrooms: [],
   discoveredAreas: [explorationAreas[0]], // Start with Mosswood Forest discovered
   currentDay: 1,
+  currentTime: { hour: 6, minute: 0 }, // Start at 6 AM
   gamePhase: "exploration",
   explorationMap: generateMap(10, 10), // Initialize with a 10x10 map
 };
 
 // Action types
+import { TimeIncrement } from "../types";
+
 type GameAction =
   | { type: "SET_PLAYER_NAME"; payload: string }
   | { type: "SET_SHOP_NAME"; payload: string }
@@ -79,7 +82,8 @@ type GameAction =
   | { type: "MOVE_PLAYER"; payload: { x: number; y: number } }
   | { type: "GENERATE_NEW_MAP"; payload: { width: number; height: number } }
   | { type: "TRIGGER_EVENT"; payload: { x: number; y: number } }
-  | { type: "UPDATE_MAP_TILES"; payload: MapTile[][] };
+  | { type: "UPDATE_MAP_TILES"; payload: MapTile[][] }
+  | { type: "ADVANCE_TIME"; payload: TimeIncrement };
 
 // Reducer function
 function gameReducer(state: GameState, action: GameAction): GameState {
@@ -337,6 +341,40 @@ function gameReducer(state: GameState, action: GameAction): GameState {
           tiles: action.payload,
         },
       };
+    }
+
+    case "ADVANCE_TIME": {
+      const { hours = 0, minutes = 0, reset = false } = action.payload;
+
+      if (reset) {
+        // Reset time to the specified hour/minute
+        return {
+          ...state,
+          currentTime: { hour: hours, minute: minutes },
+        };
+      } else {
+        let newHour = state.currentTime.hour + hours;
+        let newMinute = state.currentTime.minute + minutes;
+        let newDay = state.currentDay;
+
+        // Handle minute overflow
+        if (newMinute >= 60) {
+          newHour += Math.floor(newMinute / 60);
+          newMinute %= 60;
+        }
+
+        // Handle hour overflow
+        if (newHour >= 24) {
+          newDay += Math.floor(newHour / 24);
+          newHour %= 24;
+        }
+
+        return {
+          ...state,
+          currentTime: { hour: newHour, minute: newMinute },
+          currentDay: newDay,
+        };
+      }
     }
 
     default:

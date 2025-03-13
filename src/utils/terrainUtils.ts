@@ -20,6 +20,19 @@ interface TerrainProperties {
 
 export const getTerrainProperties = (type: BiomeType): TerrainProperties => {
   switch (type) {
+    case "empty":
+      return {
+        costs: { stamina: 5, health: 0 },
+        description: "A clear, safe area with no hazards.",
+        mushroomChance: 0, // No mushrooms in empty tiles
+        dangerChance: 0, // No dangers in empty tiles
+        restChance: 0, // No rest spots in empty tiles
+        mushrooms: {
+          common: [],
+          rare: [],
+          legendary: [],
+        },
+      };
     case "mountain":
       return {
         costs: { stamina: 15, health: 0 },
